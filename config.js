@@ -4,11 +4,11 @@ import { fileURLToPath } from 'url'
 import fs from 'fs'
 
 global.owner = [
-  ['3547872309', '𝙁𝙖𝙣𝙩𝙖𝙨𝙢𝙖 / 𝘾𝙧𝙚𝙖𝙙𝙤𝙧', true],
-  ['573166666661', 'Colaborador', true],
+  ['393518398856', '𝙁𝙖𝙣𝙩𝙖𝙨𝙢𝙖 / 𝘾𝙧𝙚𝙖𝙙𝙤𝙧', true],
+  ['393518398856', 'Colaborador', true],
 ] 
-global.suittag = ['3547872309'] 
-global.prems = ['3547872309'] 
+global.suittag = ['393518398856'] 
+global.prems = ['393518398856'] 
 
 global.packname = '𝙁𝙖𝙣𝙩𝙖𝙨𝙢𝙖'
 global.author = '★ 𝙁𝙖𝙣𝙩𝙖𝙨𝙢𝙖 - 𝘽𝙤𝙩 ★'
