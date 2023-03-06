@@ -10,11 +10,11 @@ global.owner = [
 global.suittag = ['393518398856'] 
 global.prems = ['393518398856'] 
 
-global.packname = '𝙁𝙖𝙣𝙩𝙖𝙨𝙢𝙖'
-global.author = '★ 𝙁𝙖𝙣𝙩𝙖𝙨𝙢𝙖 - 𝘽𝙤𝙩 ★'
-global.wm = '★ 𝙁𝙖𝙣𝙩𝙖𝙨𝙢𝙖 - 𝘽𝙤𝙩 ★'
-global.igfg = '★ 𝙁𝙖𝙣𝙩𝙖𝙨𝙢𝙖 - 𝘽𝙤𝙩 ★'
-global.wait = '*[❗] Ƈᴀʀɢᴀɴᴅᴏ, ᴀɢᴜᴀʀᴅᴇ ᴜɴ ᴍᴏᴍᴇɴᴛᴏ...*'
+global.packname = 'NotYourBot'
+global.author = '★ NotYour - 𝘽𝙤𝙩 ★'
+global.wm = '★ NotYour - 𝘽𝙤𝙩 ★'
+global.igfg = '★ NotYour - 𝘽𝙤𝙩 ★'
+global.wait = '*[❗] Oh dammi un sec pezzo di...*'
 
 global.keysZens = ['fiktod', 'c2459db922', 'BF39D349845E', '675e34de8a', '37CC845916', '0b917b905e6f', '6fb0eff124']
 global.keysxxx = keysZens[Math.floor(keysZens.length * Math.random())]
