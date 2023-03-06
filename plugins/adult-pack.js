@@ -10,5 +10,6 @@ handler.command = /^(ditalino)$/i
 export default handler
 
 global.pack = [
-  "https://i.imgur.com/fjnl3X7.mp4"
+  "https://i.imgur.com/fjnl3X7.mp4",
+  "https://i.imgur.com/N7kpsh8.mp4"
 ]
