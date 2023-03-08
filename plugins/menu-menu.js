@@ -195,7 +195,7 @@ if (teks == 'game') tags = {
     let mpt = clockString(_mpt)
       const sections = [
    {
-    title: `${htki} MAIN ${htka}`,
+    title: `${} MAIN ${}`,
 	rows: [
 	    {title: `⚠️ Information ⚠️`, rowId: ".vall"},
 	]
