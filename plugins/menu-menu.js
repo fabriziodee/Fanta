@@ -1,583 +1,522 @@
-// MADE BY KANNACHANN
-// RECODE BY HITORII
-
+import { xpRange } from '../lib/levelling.js'
+const { levelling } = '../lib/levelling.js'
+import PhoneNumber from 'awesome-phonenumber'
 import { promises } from 'fs'
 import { join } from 'path'
-import { xpRange } from '../lib/levelling.js'
-import moment from 'moment-timezone'
-import os from 'os'
-import fs from 'fs'
-import fetch from 'node-fetch'
-
-const defaultMenu = {
-  before: `
-%m1 *I N F O  C M D* 
-%m4 *Ⓟ* = Premium
-%m4 *Ⓛ* = Limit
-%m3
-%readmore
-`.trimStart(),
-  header: '%cc *%category* %c1',
-  body: '%c2 %cmd %isPremium %islimit',
-  footer: '%c3',
-  after: `%c4 %me`,
+let handler = async (m, { conn, usedPrefix, usedPrefix: _p, __dirname, text }) => {
+try {
+let vn = './media/menu.mp3'
+let pp = './Menu2.jpg'
+let _package = JSON.parse(await promises.readFile(join(__dirname, '../package.json')).catch(_ => ({}))) || {}
+let { exp, limit, level, role } = global.db.data.users[m.sender]
+let { min, xp, max } = xpRange(level, global.multiplier)
+let name = await conn.getName(m.sender)
+let d = new Date(new Date + 3600000)
+let locale = 'es'
+let weton = ['Pahing', 'Pon', 'Wage', 'Kliwon', 'Legi'][Math.floor(d / 84600000) % 5]
+let week = d.toLocaleDateString(locale, { weekday: 'long' })
+let date = d.toLocaleDateString(locale, {
+day: 'numeric',
+month: 'long',
+year: 'numeric'
+})
+let dateIslamic = Intl.DateTimeFormat(locale + '-TN-u-ca-islamic', {
+day: 'numeric',
+month: 'long',
+year: 'numeric'
+}).format(d)
+let time = d.toLocaleTimeString(locale, {
+hour: 'numeric',
+minute: 'numeric',
+second: 'numeric'
+})
+let _uptime = process.uptime() * 1000
+let _muptime
+if (process.send) {
+process.send('uptime')
+_muptime = await new Promise(resolve => {
+process.once('message', resolve)
+setTimeout(resolve, 1000)
+}) * 1000
 }
-let handler = async (m, { conn, usedPrefix: _p, __dirname, args }) => {
-	let tags
-	let teks = `${args[0]}`.toLowerCase()
-  let arrayMenu = ['all', 'anime', 'action', 'downloader', 'image', 'game', 'update', 'maker', 'edukasi', 'news', 'random', 'xp', 'islamic', 'stiker', 'rpg', 'kerangajaib', 'quotes', 'admin', 'group', 'premium', 'internet', 'anonymous', 'nulis', 'tools', 'fun', 'database','quran', 'vote', 'audio', 'jadibot', 'nsfw', 'info', 'owner', 'nocategory']
-  if (!arrayMenu.includes(teks)) teks = '404'
-  if (teks == 'all') tags = {
-  'main': 'Main',
-  'apk': 'Apk',
-  'action': 'Action RP',
-  'image': 'Image',
-  'game': 'Game',
-  'nsfw': 'Nsfw',
-  'rpg': 'RPG Games',
-  'xp': 'Exp & Limit',
-  'sticker': 'Sticker',
-  'kerang': 'Kerang Ajaib',
-  'quotes': 'Quotes',
-  'virus': 'Virus',
-  'fun': 'Fun',
-  'anime': 'Anime',
-  'admin': 'Admin',
-  'group': 'Group',
-  'vote': 'Voting',
-  'absen': 'Absen',
-  'premium': 'Premium',
-  'anonymous': 'Anonymous Chat',
-  'internet': 'Internet',
-  'downloader': 'Downloader',
-  'tools': 'Tools',
-  'nulis': 'MagerNulis & Logo',
-  'audio': 'Audio',
-  'maker': 'Maker',
-  'database': 'Database',
-  'quran': 'Al Qur\'an',
-  'owner': 'Owner',
-  'host': 'Host',
-  'advanced': 'Advanced',
-  'info': 'Info',
-  '': 'No Category',
+let muptime = clockString(_muptime)
+let uptime = clockString(_uptime)
+let totalreg = Object.keys(global.db.data.users).length
+let rtotalreg = Object.values(global.db.data.users).filter(user => user.registered == true).length
+let replace = {
+'%': '%',
+p: _p, uptime, muptime,
+me: conn.getName(conn.user.jid),
+npmname: _package.name,
+npmdesc: _package.description,
+version: _package.version,
+exp: exp - min,
+maxexp: xp,
+totalexp: exp,
+xp4levelup: max - exp,
+github: _package.homepage ? _package.homepage.url || _package.homepage : '[unknown github url]',
+level, limit, name, weton, week, date, dateIslamic, time, totalreg, rtotalreg, role,
+readmore: readMore
 }
-  if (teks == 'anime') tags = {
-    'anime': 'Anime'
-  }
-  if (teks == 'image') tags = {
-    'image': 'Image'
-  }
-if (teks == 'game') tags = {
-    'game': 'Game'
-  }
-  if (teks == 'rpg') tags = {
-    'rpg': 'Rpg'
-  }
-  if (teks == 'edukasi') tags = {
-    'edukasi': 'Edukasi'
-  }
-  if (teks == 'news') tags = {
-    'news': 'News'
-  }
-  if (teks == 'random') tags = {
-    'random': 'Random'
-  }
-  if (teks == 'xp') tags = {
-    'xp': 'Exp & Limit'
-  }
-  if (teks == 'stiker') tags = {
-    'sticker': 'Stiker'
-  }
-  if (teks == 'apk') tags = {
-    'apk': 'Apk'
-  }
-  if (teks == 'kerangajaib') tags = {
-    'kerang': 'Kerang Ajaib'
-  }
-  if (teks == 'action') tags = {
-    'action': 'Action RP'
-  }
-  if (teks == 'quotes') tags = {
-    'quotes': 'Quotes'
-  }
-  if (teks == 'admin') tags = {
-    'admin': `Admin ${global.opts['restrict'] ? '' : '(Dinonaktifkan)'}`,
-    'group': 'Grup'
-  }
-  if (teks == 'group') tags = {
-    'group': 'Group'
-  }
-  if (teks == 'premium') tags = {
-    'premium': 'Premium'
-  }
-  if (teks == 'internet') tags = {
-    'internet': 'Internet'
-  }
-  if (teks == 'anonymous') tags = {
-    'anonymous': 'Anonymous Chat'
-  }
-  if (teks == 'nulis') tags = {
-    'nulis': 'Nulis',
-    'maker': 'Maker'
-  }
-  if (teks == 'downloader') tags = {
-    'downloader': 'Downloader'
-  }
-  if (teks == 'tools') tags = {
-    'tools': 'Tools'
-  }
-  if (teks == 'fun') tags = {
-    'fun': 'Fun'
-  }
-  if (teks == 'virus') tags = {
-    'virus': 'Virus'
-  }
-  if (teks == 'database') tags = {
-    'database': 'Database'
-  }
-  if (teks == 'vote') tags = {
-    'vote': 'Voting',
-    'absen': 'Absen'
-  }
-  if (teks == 'absen') tags = {
-    'absen': 'Absen'
-  }
-  if (teks == 'quran') tags = {
-    'quran': 'Al-Qur\'an',
-    'islamic': 'Islamic'
-  }
-  if (teks == 'audio') tags = {
-    'audio': 'Audio'
-  }
-  if (teks == 'info') tags = {
-    'info': 'Info'
-  }
-  if (teks == 'owner') tags = {
-    'owner': 'Owner',
-    'host': 'Host',
-    'advanced': 'Advanced'
-  }
- if (teks == 'nsfw') tags = {
-    'nsfw': 'Nsfw'
-  }
-  if (teks == 'nocategory') tags = {
-    '': 'No Category'
-  }
-  try {
-  	// DEFAULT MENU
-      let dash = global.dashmenu
-  	let m1 = global.dmenut
-      let m2 = global.dmenub
-      let m3 = global.dmenuf
-      let m4 = global.dmenub2
-      
-      // COMMAND MENU
-      let cc = global.cmenut
-      let c1 = global.cmenuh
-      let c2 = global.cmenub
-      let c3 = global.cmenuf
-      let c4 = global.cmenua
-      
-      // LOGO L P
-      let lprem = global.lopr
-      let llim = global.lolm
-      let tag = `@${m.sender.split('@')[0]}`
-    
-    let _mpt
-    if (process.send) {
-      process.send('uptime')
-      _mpt = await new Promise(resolve => {
-        process.once('message', resolve)
-        setTimeout(resolve, 1000)
-      }) * 1000
-    }
-    let mpt = clockString(_mpt)
-      const sections = [
-   {
-    title: `$ MAIN $'
-   ,
-	rows: [
-	    {title: `⚠️ Information ⚠️`, rowId: ".vall"},
-	]
-	},{
-		title: `${htki} 🔥NEW UPDATE🔥 ${htka}`,
-	rows: [
-	    {title: `╿🌞╽Jadi Anime`, rowId: ".jadianime", description: "⤷ Fitur Ai merubah foto seseorang menjadi Anime"},
-	]
-	},{
-	title: `${htki} MENU ${htka}`,
-	rows: [
-    {title: `╿💬╽All`, rowId: ".? all", description: "⤷ Menampilkan Semua command BOT"},
-    {title: `╿🌱╽Rpg`, rowId: ".? rpg", description: "⤷ Game Epic Rpg!"},
-    {title: `╿📣╽VN`, rowId: ".menuvn", description: "⤷ Random VN!"},
-	{title: `╿✨╽Exp`, rowId: ".? xp", description: "⤷ Ayo tingkatkan pangkat mu!"},
-        
-    {title: `╿📸╽Image`, rowId: ".? image", description: "⤷ Random search image"},
-	{title: `╿🎮╽Game`, rowId: ".? game", description: "⤷ Gamenya seru seru lho >-<"},
-	{title: `╿🧩╽Fun`, rowId: ".? fun", description: "⤷ Fitur yang aman untuk keluarga"},
-	{title: `╿🐚╽ Kerang`, rowId: ".? kerangajaib", description: "⤷ Tanyakan pada ketua club"},
-	{title: `╿📑╽Quotes`, rowId: ".? quotes", description: "⤷ Random Inspirasi"},
-	{title: `╿⛩️╽Anime`, rowId: ".? anime", description: "⤷ Kamu wibu ya bang?"},
-	{title: `╿🔞╽Nsfw`, rowId: ".? nsfw", description: "⤷ Tch, dasar sagne"},
-	{title: `╿🌟╽Premium`, rowId: ".? premium", description: "⤷ Only premium Users"},
-	{title: `╿🎭╽Anonymous Chats`, rowId: ".? anonymous", description: "⤷ Bicara dengan orang tidak dikenal"},
-	{title: `╿📖╽Al-Quran`, rowId: ".? quran", description: "⤷ Tobat yuk kak"},
-	{title: `╿🌎╽Internet`, rowId: ".? internet", description: "⤷ Cari sesuatu diBOT"},
-	{title: `╿📩╽Downloaders`, rowId: ".? downloader", description: "⤷ Download sesuatu diBOT"},
-	{title: `╿🎨╽Stikers`, rowId: ".? stiker", description: "⤷ Buat Sticker diBOT"},
-	{title: `╿✏️╽Nulis`, rowId: ".? nulis", description: "⤷ Nulis kok males kak?"},
-	{title: `╿🎧╽Audio`, rowId: ".? audio", description: "⤷ Ubah Audio dengan Filter"},
-	{title: `╿🏢╽Group`, rowId: ".? group", description: "⤷ Only Groups"},
-	{title: `╿👑╽Admin`, rowId: ".? admin", description: "⤷ Only Admin Group"},
-	{title: `╿🗂️╽Database`, rowId: ".? database", description: "⤷ Simpan sesuatu diBOT"},
-	{title: `╿🛠️╽Tools`, rowId: ".? tools", description: "⤷ Mungkin tools ini bisa membantu?"},
-	{title: `╿ℹ️╽Info`, rowId: ".? info", description: "⤷ Info info BOT"},
-	{title: `╿👩‍╽Owner`, rowId: ".? owner", description: "⤷ Owner Only!"},
-	{title: `╿❓╽No Category`, rowId: ".? nocategory", description: "⤷ Fitur tanpa kategory!"},
-	]
-  },
-]
-
-let usrs = db.data.users[m.sender]
-let tek = `*${ucapan()} ${conn.getName(m.sender)}*
-📄 *ɴᴀᴍᴇ:* ${usrs.registered ? usrs.name : conn.getName(m.sender)}
-🏷 *ᴛᴀɢs:* @${m.sender.split`@`[0]}
-🎟 *sᴛᴀᴛᴜs:* ${m.sender.split`@`[0] == nomorown ? 'Developer' : (usrs.premiumTime >= 1 ? 'Premium User' : 'Free User')}
-🃏 *ᴘʀᴇᴍɪᴜᴍ:* ${usrs.premiumTime > 1 ? 'Yes': 'No'}
-🏅 *ʀᴏʟᴇ:* ${usrs.role}${usrs.premiumTime > 1 ? `
-• *ᴇxᴘɪʀᴇᴅ ᴘʀᴇᴍɪᴜᴍ:*
-${clockStringP(usrs.premiumTime - new Date())}` : ''}
-`
-const listMessage = {
-  text: tek,
-  footer: '⚠️ *Note:* Mohon tidak _SPAM_ saat menggunakan BOT agar tidak di Banned\n\nhttps://saweria.co/nvkenn',
-  mentions: await conn.parseMention(tek),
-  title: `${htki} *LIST MENU* ${htka}`,
-  buttonText: `LIST MENU ⎙`,
-  sections
-}
-  if (teks == '404') {
-  
-  
-  	return conn.sendMessage(m.chat, listMessage, { quoted: m, mentions: await conn.parseMention(tek), contextInfo:{ forwardingScore: 99999, isForwarded: true }})
-    }
-  	
- /**************************** TIME *********************/
- let wib = moment.tz('Asia/Jakarta').format('HH:mm:ss')
-    let wibh = moment.tz('Asia/Jakarta').format('HH')
-    let wibm = moment.tz('Asia/Jakarta').format('mm')
-    let wibs = moment.tz('Asia/Jakarta').format('ss')
-    let wit = moment.tz('Asia/Jayapura').format('HH:mm:ss')
-    let wita = moment.tz('Asia/Makassar').format('HH:mm:ss')
-    let wktuwib = `${wibh} H ${wibm} M ${wibs} S`
+text = text.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), (_, name) => '' + replace[name])
  
- let mode = global.opts['self'] ? 'Private' : 'Publik'
-    let _package = JSON.parse(await promises.readFile(join(__dirname, '../package.json')).catch(_ => ({}))) || {}
-    let { age, exp, limit, level, role, registered, money} = global.db.data.users[m.sender]
-    let { min, xp, max } = xpRange(level, global.multiplier)
-    let name = await conn.getName(m.sender)
-    let premium = global.db.data.users[m.sender].premiumTime
-    let prems = `${premium > 0 ? 'Premium': 'Free'}`
-    let platform = os.platform()
     
-    //-----------TIME---------
-    let ucpn = `${ucapan()}`
-    let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
-    let d = new Date(new Date + 3600000)
-    let locale = 'id'
-    // d.getTimeZoneOffset()
-    // Offset -420 is 18.00
-    // Offset    0 is  0.00
-    // Offset  420 is  7.00
-    let weton = ['Pahing', 'Pon', 'Wage', 'Kliwon', 'Legi'][Math.floor(d / 84600000) % 5]
-    let week = d.toLocaleDateString(locale, { weekday: 'long' })
-    let date = d.toLocaleDateString(locale, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
-    let dateIslamic = Intl.DateTimeFormat(locale + '-TN-u-ca-islamic', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }).format(d)
-    let time = d.toLocaleTimeString(locale, {
-      hour: 'numeric',
-      minute: 'numeric',
-      second: 'numeric'
-    })
-    let _uptime = process.uptime() * 1000
-    let _muptime
-    if (process.send) {
-      process.send('uptime')
-      _muptime = await new Promise(resolve => {
-        process.once('message', resolve)
-        setTimeout(resolve, 1000)
-      }) * 1000
-    }
-    let muptime = clockString(_muptime)
-    let uptime = clockString(_uptime)
-    //---------------------
-    
-    let totalreg = Object.keys(global.db.data.users).length
-    let rtotalreg = Object.values(global.db.data.users).filter(user => user.registered == true).length
-    let help = Object.values(global.plugins).filter(plugin => !plugin.disabled).map(plugin => {
-      return {
-        help: Array.isArray(plugin.tags) ? plugin.help : [plugin.help],
-        tags: Array.isArray(plugin.tags) ? plugin.tags : [plugin.tags],
-        prefix: 'customPrefix' in plugin,
-        limit: plugin.limit,
-        premium: plugin.premium,
-        enabled: !plugin.disabled,
-      }
-    })
-    let groups = {}
-    for (let tag in tags) {
-      groups[tag] = []
-      for (let plugin of help)
-        if (plugin.tags && plugin.tags.includes(tag))
-          if (plugin.help) groups[tag].push(plugin)
-          }
-    conn.menu = conn.menu ? conn.menu : {}
-    let before = conn.menu.before || defaultMenu.before
-    let header = conn.menu.header || defaultMenu.header
-    let body = conn.menu.body || defaultMenu.body
-    let footer = conn.menu.footer || defaultMenu.footer
-    let after = conn.menu.after || (conn.user.jid == global.conn.user.jid ? '' : `Powered by https://wa.me/${global.conn.user.jid.split`@`[0]}`) + defaultMenu.after
-    let _text = [
-      before,
-      ...Object.keys(tags).map(tag => {
-        return header.replace(/%category/g, tags[tag]) + '\n' + [
-          ...help.filter(menu => menu.tags && menu.tags.includes(tag) && menu.help).map(menu => {
-            return menu.help.map(help => {
-              return body.replace(/%cmd/g, menu.prefix ? help : '%_p' + help)
-                .replace(/%islimit/g, menu.limit ? llim : '')
-                .replace(/%isPremium/g, menu.premium ? lprem : '')
-                .trim()
-            }).join('\n')
-          }),
-          footer
-        ].join('\n')
-      }),
-      after
-    ].join('\n')
-    let text = typeof conn.menu == 'string' ? conn.menu : typeof conn.menu == 'object' ? _text : ''
-    let replace = {
-      '%': '%',
-      p: uptime, muptime,
-      me: conn.getName(conn.user.jid),
-      npmname: _package.name,
-      npmdesc: _package.description,
-      version: _package.version,
-      exp: exp - min,
-      maxexp: xp,
-      totalexp: exp,
-      xp4levelup: max - exp,
-      github: _package.homepage ? _package.homepage.url || _package.homepage : '[unknown github url]',
-      tag, dash,m1,m2,m3,m4,cc, c1, c2, c3, c4,lprem,llim,
-      ucpn,platform, wib, mode, _p, money, age, tag, name, prems, level, limit, name, weton, week, date, dateIslamic, time, totalreg, rtotalreg, role,
-      readmore: readMore
-    }
-    text = text.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), (_, name) => '' + replace[name])
-    
-    //----------------- FAKE
-    let ftoko = {
-    key: {
-    fromMe: false,
-    participant: `${m.sender.split`@`[0]}` + '@s.whatsapp.net',
-    remoteJid: 'status@broadcast',
-  },
-  message: {
-  "productMessage": {
-  "product": {
-  "productImage":{
-  "mimetype": "image/jpeg",
-  "jpegThumbnail": fs.readFileSync('./thumbnail.jpg'),
-    },
-  "title": `${ucapan()}`,
-  "description": '𝗧 𝗜 𝗠 𝗘 : ' + wktuwib,
-  "currencyCode": "US",
-  "priceAmount1000": "100",
-  "retailerId": wm,
-  "productImageCount": 999
-        },
-  "businessOwnerJid": `${m.sender.split`@`[0]}@s.whatsapp.net`
-  }
-  }
-  }
-  let fgif = {
-    key: {
-    remoteJid: 'status@broadcast',
-    participant : '0@s.whatsapp.net'},
-    message: { 
-                  "videoMessage": { 
-                  "title": wm,
-                  "h": `Nekohime`,
-                  'duration': '99999999', 
-                  'gifPlayback': 'true', 
-                  'caption': bottime,
-                  'jpegThumbnail': thumb
-                         }
-                        }
-                     }
-  let fkon = { key: { fromMe: false, participant: `${m.sender.split`@`[0]}@s.whatsapp.net`, ...(m.chat ? { remoteJid: '16504228206@s.whatsapp.net' } : {}) }, message: { contactMessage: { displayName: `${name}`, vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;a,;;;\nFN:${name}\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`}}}
-  
-    const pp = await conn.profilePictureUrl(conn.user.jid).catch(_ => './src/avatar_contact.png')
-    
-    //------------------< MENU >----------------
-    
-    //------------------ SIMPLE
-    /*conn.reply(m.chat, text, fkon, { contextInfo: { mentionedJid: [m.sender],
-        externalAdReply: {
-            title: `${htjava} ${namebot}`,
-            body: titlebot,
-            description: titlebot,
-            mediaType: 2,
-          thumbnail: await(await fetch(thumb2)).buffer(),
-         mediaUrl: sig
-        }
-     }
-    })*/
-    
-    //------------------ DOCUMENT
-    let d1 = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-    let d2 = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    let d3  = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    let d4 = 'application/pdf'
-    let d5 = 'text/rtf'
-    let td = `${pickRandom([d1,d2,d3,d4,d5])}`
-    
-    //------- BUTTON DOC WITH EXTERNAL ADS
-    // MAMPUS DI ENC :v <- boong dia awokwkwkk 
-    
-let url = `${pickRandom(['https://telegra.ph/file/010ac47b98349d553a25d.jpg'])}`
 
-let buttonMessage= {
-'document':{'url':sgc},
-'mimetype':global.ddocx,
-'fileName':'═┅═❏ *DASHBOARD* ❏═┅═',
-'fileLength':fsizedoc,
-'pageCount':fpagedoc,
-'contextInfo':{
-'externalAdReply':{
-'showAdAttribution':true,
-'mediaUrl':global.sig,
-'mediaType':2,
-'previewType':'pdf',
-'title':global.titlebot,
-'body':botdate,
-'thumbnail':await(await fetch(url)).buffer(),
-'sourceUrl':sgc}},
-'caption':wm,
-'footer':text,
-'buttons':[
-{'buttonId':'.menu','buttonText':{'displayText':'Menu'},'type':1},
-{'buttonId':'.sewa','buttonText':{'displayText':'Sewa'},'type':1}
-],
-'headerType':6}
-    await conn.sendMessage(m.chat,buttonMessage, { quoted:m})
+let str = `
+╭–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+│﹡ミ ❗️ʜᴏʟᴀ﹐✨${name}✨ᴀϙᴜɪ ᴇsᴛᴀ ᴇʟ ᴍᴇɴᴜ ᴄᴏᴍᴘʟᴇᴛᴏ ᴅᴇ ғᴀɴᴛᴀsᴍᴀ﹣ʙᴏᴛ ❗️彡﹡
+│═════════════════════════════════════════⊷
+├⪧ *📅 ғᴇᴄʜᴀ: ${week}, ${date}*
+├⪧ *📈 ᴛɪᴇᴍᴘᴏ ᴀᴄᴛɪᴠᴏ : ${uptime}*
+├⪧ *📊 ᴜsᴜᴀʀɪᴏs : ${rtotalreg}*
+╰━═══════════════════⊷
 
+╭───[﹡< ɪɴғᴏʀᴍᴀᴄɪᴏɴ ᴅᴇʟ ʙᴏᴛ />﹡]
+│━════════════════════⊷
+┃❖╭───────────────────
+┃❖│⪧ ° ඬ ⃟ 💟 ${usedPrefix}grupos
+┃❖│⪧ ° ඬ ⃟ 💟 ${usedPrefix}estado
+┃❖│⪧ ° ඬ ⃟ 💟 ${usedPrefix}infobot
+┃❖│⪧ ° ඬ ⃟ 💟 ${usedPrefix}donar
+┃❖│⪧ ° ඬ ⃟ 💟 ${usedPrefix}grouplist
+┃❖│⪧° ඬ ⃟ 💟 ${usedPrefix}owner
+┃❖│⪧° ඬ ⃟ 💟 ${usedPrefix}script
+┃❖│⪧° ඬ ⃟ 💟 Bot_ (𝑢𝑠𝑜 𝑠𝑖𝑛 𝑝𝑟𝑒𝑓𝑖𝑗𝑜)
+┃❖╰───────────────────
+╰━════════════════════⊷
 
-//-------DOC TEMPLATE
-    const message = {
-            document: { url: thumbdoc },
-            jpegThumbnail: await (await fetch(thumbdoc)).buffer(),
-            fileName: '?? 𝗜 𝗠 𝗘 : ' + wktuwib,
-            mimetype: td,
-            fileLength: fsizedoc,
-            pageCount: fpagedoc,
-            caption: text,
-            footer: botdate,
-            templateButtons: [
-                {
-                    urlButton: {
-                        displayText: 'SC?',
-                        url: 'https://www.whatsapp.com/otp/copy/' + `Lmao`
-                    }
-                },
-                {
-                    urlButton: {
-                        displayText: 'Group BOT',
-                        url: sgc
-                    }
-                },
-                {
-                    quickReplyButton: {
-                        displayText: 'Owner',
-                        id: '.owner'
-                    }
-                },
-                {
-                    quickReplyButton: {
-                        displayText: 'Donasi',
-                        id: '.donasi'
-                    }
-                },
-                {
-                    quickReplyButton: {
-                        displayText: 'Shop',
-                        id: '.store'
-                    }
-                },
-            ]
-        }
-        //await conn.sendMessage(m.chat, message, wm, m, { mentionedJid: [m.sender] })
-        
-    //------------------- BUTTON VID
-    //conn.sendButton(m.chat, text, wm, 'https://telegra.ph/file/a46ab7fa39338b1f54d5a.mp4', [['Ping', '.ping'],['Owner', '.owner'],['Donasi', '.donasi']],ftoko, { gifPlayback: true, contextInfo: { externalAdReply: {title: namebot, body: bottime, sourceUrl: sig, thumbnail: fs.readFileSync('./thumbnail.jpg') }}})
-    
-  } catch (e) {
-    conn.reply(m.chat, 'Maaf, menu sedang error', m)
-    throw e
-  }
-}
-
-handler.command = /^(menu|\?|help)$/i
-
-handler.register = true
-handler.exp = 3
-
+╭───「﹡< ᴜɴᴇ ᴀ ғᴀɴᴛᴀsᴍᴀ﹣ʙᴏᴛ ᴀ ᴛᴜ ɢʀᴜᴘᴏ  />﹡」
+│
+├⪧° ඬ⃟👽 ${usedPrefix}join *<enlace / link / url>*
+╰───────────────────────────
+╭───「﹡<ᴊᴜᴇɢᴏs/>﹡」
+│
+├⪧° ඬ⃟🎖️ ${usedPrefix}mates *<noob / easy / medium / hard / extreme /impossible /impossible2>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}ppt *<papel / tijera /piedra>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}prostituto *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}prostituta *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}gay2 *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}lesbiana *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}pajero *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}pajera *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}puto *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}puta *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}manco *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}manca *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}rata *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}love *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}doxear *<nombre / @tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}pregunta *<texto>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}suitpvp *<@tag>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}slot *<apuesta>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}ttt *<nombre sala>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}delttt
+├⪧° ඬ⃟🎖️ ${usedPrefix}simi *<texto>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}top *<texto>*
+├⪧° ඬ⃟🎖️ ${usedPrefix}topgays
+├⪧° ඬ⃟🎖️ ${usedPrefix}topotakus
+├⪧° ඬ⃟🎖️ ${usedPrefix}formarpareja
+├⪧° ඬ⃟🎖️ ${usedPrefix}verdad
+├⪧° ඬ⃟🎖️ ${usedPrefix}reto
+├⪧° ඬ⃟🎖️ ${usedPrefix}cancion
+├⪧° ඬ⃟🎖️ ${usedPrefix}pista
+╰───────────────
+╭───「*<ᴀᴄᴛɪᴠᴀʀ ᴏ ᴅᴇsᴀᴄᴛɪᴠᴀʀ/>﹡」
+│
+├⪧° ඬ⃟☑️ ${usedPrefix}enable *welcome*
+├⪧° ඬ⃟☑️ ${usedPrefix}disable *welcome*
+├⪧° ඬ⃟☑️ ${usedPrefix}enable *modohorny*
+├⪧° ඬ⃟☑️ ${usedPrefix}disable *modohorny*
+├⪧° ඬ⃟☑️ ${usedPrefix}enable *antilink*
+├⪧° ඬ⃟☑️ ${usedPrefix}disable *antilink*
+├⪧° ඬ⃟☑️ ${usedPrefix}enable *antilink2*
+├⪧° ඬ⃟☑️ ${usedPrefix}disable *antilink2*
+├⪧° ඬ⃟☑️ ${usedPrefix}enable *detect*
+├⪧° ඬ⃟☑️ ${usedPrefix}disable *detect*
+├⪧° ඬ⃟☑️ ${usedPrefix}enable *audios*
+├⪧° ඬ⃟☑️ ${usedPrefix}disable *audios*
+├⪧° ඬ⃟☑️ ${usedPrefix}enable *autosticker*
+├⪧° ඬ⃟☑️ ${usedPrefix}disable *autosticker*
+├⪧° ඬ⃟☑️ ${usedPrefix}enable *antiviewonce*
+├⪧° ඬ⃟☑️ ${usedPrefix}disable *antiviewonce*
+╰──────────────────────────
+╭───「﹡<ʀᴇᴘᴏʀᴛᴇs ᴅᴇ ғᴀʟʟᴏs/>﹡」
+│
+├⪧° ඬ⃟🔰 ${usedPrefix}reporte *<texto>*
+╰───────────────────
+╭───「﹡<ᴅᴇsᴄᴀʀɢᴀs/>﹡」
+│
+├⪧° ඬ⃟📥 ${usedPrefix}facebook *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}instagram *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}mediafire *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}instagram *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}gitclone *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}stickerpack *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}gdrive *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}tiktok *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}xnxxdl *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}xvideosdl *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}ytmp3 *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}ytmp4 *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}ytmp3doc *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}ytmp4doc *<enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}play.1 *<texto / enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}play.2 *<texto / enlace / link / url>*
+├⪧° ඬ⃟📥 ${usedPrefix}play *<texto>*
+├⪧° ඬ⃟📥 ${usedPrefix}playdoc *<texto>*
+├⪧° ඬ⃟📥 ${usedPrefix}playlist *<texto>*
+├⪧° ඬ⃟📥 ${usedPrefix}playlist2 *<texto>*
+├⪧° ඬ⃟📥 ${usedPrefix}ringtone *<texto>*
+├⪧° ඬ⃟📥 ${usedPrefix}soundcloud *<texto>*
+├⪧° ඬ⃟📥 ${usedPrefix}imagen *<texto>*
+├⪧° ඬ⃟📥 ${usedPrefix}pinteret *<texto>*
+├⪧° ඬ⃟📥 ${usedPrefix}wallpaper *<texto>*
+├⪧° ඬ⃟📥 ${usedPrefix}wallpaper2 *<texto>*
+├⪧° ඬ⃟📥 ${usedPrefix}pptiktok *<nombre de usuario>*
+├⪧° ඬ⃟📥 ${usedPrefix}igstalk *<nombre de usuario>*
+├⪧° ඬ⃟📥 ${usedPrefix}igstory *<nombre de usuario>*
+├⪧° ඬ⃟📥 ${usedPrefix}tiktokstalk *<nombre de usuario>*
+╰─────────────────────────────
+╭───「﹡<ɢʀᴜᴘᴏs/>﹡」
+│
+├⪧° ඬ⃟💎 ${usedPrefix}add *<numero>*
+├⪧° ඬ⃟💎 ${usedPrefix}kick *<@tag>*
+├⪧° ඬ⃟💎 ${usedPrefix}grupo *<abrir / cerrar>*
+├⪧° ඬ⃟💎 ${usedPrefix}promote *<@tag>*
+├⪧° ඬ⃟💎 ${usedPrefix}demote *<@tag>*
+├⪧° ඬ⃟💎 admins *<texto>*_ (𝑢𝑠𝑜 𝑠𝑖𝑛 𝑝𝑟𝑒𝑓𝑖𝑗𝑜)
+├⪧° ඬ⃟💎 ${usedPrefix}demote *<@tag>*
+├⪧° ඬ⃟💎 ${usedPrefix}infogroup
+├⪧° ඬ⃟💎 ${usedPrefix}link
+├⪧° ඬ⃟💎 ${usedPrefix}setname *<texto>*
+├⪧° ඬ⃟💎 ${usedPrefix}setdesc *<texto>*
+├⪧° ඬ⃟💎 ${usedPrefix}invocar *<texto>*
+├⪧° ඬ⃟💎 ${usedPrefix}setwelcome *<texto>*
+├⪧° ඬ⃟💎 ${usedPrefix}setbye *<texto>*
+├⪧° ඬ⃟💎 ${usedPrefix}hidetag *<texto>*
+├⪧° ඬ⃟💎 ${usedPrefix}fantasmas
+╰───────────────────────────
+╭───「﹡<ᴄᴏɴᴠᴇʀᴛɪᴅᴏʀᴇs/>* 」
+│
+├⪧° ඬ⃟🧧 ${usedPrefix}toimg *<responde a un sticker>*
+├⪧° ඬ⃟🧧 ${usedPrefix}tomp3 *<responde a un video / nota de voz>*
+├⪧° ඬ⃟🧧 ${usedPrefix}toptt *<responde a un video / audio>*
+├⪧° ඬ⃟🧧 ${usedPrefix}tovideo *<responde a un sticker>*
+├⪧° ඬ⃟🧧 ${usedPrefix}tourl *<responde a un video / imagen / audio>*
+├⪧° ඬ⃟🧧 ${usedPrefix}tts es *<texto>*
+╰───────────────────────────────────────
+╭───「﹡<ᴇғᴇᴄᴛᴏs ʏ ʟᴏɢᴏs/>﹡ 」
+│
+├⪧° ඬ⃟🖍️ ${usedPrefix}logos *<efecto> <texto>*
+├⪧° ඬ⃟🖍️ ${usedPrefix}logocorazon *<texto>*
+├⪧° ඬ⃟🖍️ ${usedPrefix}logochristmas *<texto>*
+├⪧° ඬ⃟🖍️ ${usedPrefix}simpcard *<@tag>*
+├⪧° ඬ⃟🖍️ ${usedPrefix}hornycard *<@tag>*
+├⪧° ඬ⃟🖍️ ${usedPrefix}lolice *<@tag>*
+├⪧° ඬ⃟🖍️ ${usedPrefix}ytcomment *<texto>*
+├⪧° ඬ⃟🖍️ ${usedPrefix}phmaker *<opcion><responder a imagen>*
+├⪧° ඬ⃟🖍️ ${usedPrefix}itssostupid
+├⪧° ඬ⃟🖍️ ${usedPrefix}pixelar
+├⪧° ඬ⃟🖍️ ${usedPrefix}blur
+╰───────────────
+╭───「﹡<ғʀᴀsᴇs ʏ ᴛᴇxᴛᴏs/>﹡ 」
+│
+├⪧° ඬ⃟🥀 ${usedPrefix}consejo
+├⪧° ඬ⃟🥀 ${usedPrefix}fraseromantica
+├⪧° ඬ⃟🥀 ${usedPrefix}historiaromantica
+╰────────────────────
+╭───「﹡<ʀᴀɴᴅᴏᴍ/>﹡」
+│
+├⪧° ඬ⃟👾 ${usedPrefix}cristianoronaldo
+├⪧° ඬ⃟👾 ${usedPrefix}messi
+├⪧° ඬ⃟👾 ${usedPrefix}meme
+├⪧° ඬ⃟👾 ${usedPrefix}itzy
+├⪧° ඬ⃟👾 ${usedPrefix}blackpink
+├⪧° ඬ⃟👾 ${usedPrefix}kpop *<blackpink / exo / bts>*
+├⪧° ඬ⃟👾 ${usedPrefix}lolivid
+├⪧° ඬ⃟👾 ${usedPrefix}loli
+├⪧° ඬ⃟👾 ${usedPrefix}navidad
+├⪧° ඬ⃟👾 ${usedPrefix}ppcouple
+├⪧° ඬ⃟👾 ${usedPrefix}wpmontaña
+├⪧° ඬ⃟👾 ${usedPrefix}pubg
+├⪧° ඬ⃟👾 ${usedPrefix}wpgaming
+├⪧° ඬ⃟👾 ${usedPrefix}wpaesthetic
+├⪧° ඬ⃟👾 ${usedPrefix}wpaesthetic2
+├⪧° ඬ⃟👾 ${usedPrefix}wprandom
+├⪧° ඬ⃟👾 ${usedPrefix}wallhp
+├⪧° ඬ⃟👾 ${usedPrefix}wpvehiculo
+├⪧° ඬ⃟👾 ${usedPrefix}wpmoto
+├⪧° ඬ⃟👾 ${usedPrefix}coffee
+├⪧° ඬ⃟👾 ${usedPrefix}pentol
+├⪧° ඬ⃟👾 ${usedPrefix}caricatura
+├⪧° ඬ⃟👾 ${usedPrefix}ciberespacio
+├⪧° ඬ⃟👾 ${usedPrefix}technology
+├⪧° ඬ⃟👾 ${usedPrefix}doraemon
+├⪧° ඬ⃟👾 ${usedPrefix}hacker
+├⪧° ඬ⃟👾 ${usedPrefix}planeta
+├⪧° ඬ⃟👾 ${usedPrefix}randomprofile
+├⪧° ඬ⃟👾 ${usedPrefix}neko
+├⪧° ඬ⃟👾 ${usedPrefix}waifu
+├⪧° ඬ⃟👾 ${usedPrefix}akira
+├⪧° ඬ⃟👾 ${usedPrefix}akiyama
+├⪧° ඬ⃟👾 ${usedPrefix}anna
+├⪧° ඬ⃟👾 ${usedPrefix}asuna
+├⪧° ඬ⃟👾 ${usedPrefix}ayuzawa
+├⪧° ඬ⃟👾 ${usedPrefix}boruto
+├⪧° ඬ⃟👾 ${usedPrefix}chiho
+├⪧° ඬ⃟👾 ${usedPrefix}chitoge
+├⪧° ඬ⃟👾 ${usedPrefix}deidara
+├⪧° ඬ⃟👾 ${usedPrefix}erza
+├⪧° ඬ⃟👾 ${usedPrefix}elaina
+├⪧° ඬ⃟👾 ${usedPrefix}eba
+├⪧° ඬ⃟👾 ${usedPrefix}emilia
+├⪧° ඬ⃟👾 ${usedPrefix}hestia
+├⪧° ඬ⃟👾 ${usedPrefix}hinata
+├⪧° ඬ⃟👾 ${usedPrefix}inori
+├⪧° ඬ⃟👾 ${usedPrefix}isuzu
+├⪧° ඬ⃟👾 ${usedPrefix}itachi
+├⪧° ඬ⃟👾 ${usedPrefix}itori
+├⪧° ඬ⃟👾 ${usedPrefix}kaga
+├⪧° ඬ⃟👾 ${usedPrefix}kagura
+├⪧° ඬ⃟👾 ${usedPrefix}kaori
+├⪧° ඬ⃟👾 ${usedPrefix}keneki
+├⪧° ඬ⃟👾 ${usedPrefix}kotori
+├⪧° ඬ⃟👾 ${usedPrefix}kurumi
+├⪧° ඬ⃟👾 ${usedPrefix}madara
+├⪧° ඬ⃟👾 ${usedPrefix}mikasa
+├⪧° ඬ⃟👾 ${usedPrefix}miku
+├⪧° ඬ⃟👾 ${usedPrefix}minato
+├⪧° ඬ⃟👾 ${usedPrefix}naruto
+├⪧° ඬ⃟👾 ${usedPrefix}nezuko
+├⪧° ඬ⃟👾 ${usedPrefix}sagiri
+├⪧° ඬ⃟👾 ${usedPrefix}sasuke
+├⪧° ඬ⃟👾 ${usedPrefix}sakura
+├⪧° ඬ⃟👾 ${usedPrefix}cosplay
+╰───────────────
+╭───「*<ᴄᴏᴍᴀɴᴅᴏs +18/>﹡」
+│
+├⪧° ඬ⃟🔞 ${usedPrefix}pack
+├⪧° ඬ⃟🔞 ${usedPrefix}pack2
+├⪧° ඬ⃟🔞 ${usedPrefix}pack3
+├⪧° ඬ⃟🔞 ${usedPrefix}videoxxx
+├⪧° ඬ⃟🔞 ${usedPrefix}tiktokxxx
+├⪧° ඬ⃟🔞 ${usedPrefix}tetas
+├⪧° ඬ⃟🔞 ${usedPrefix}booty
+├⪧° ඬ⃟🔞 ${usedPrefix}ecchi
+├⪧° ඬ⃟🔞 ${usedPrefix}furro
+├⪧° ඬ⃟🔞 ${usedPrefix}imagenlesbians
+├⪧° ඬ⃟🔞 ${usedPrefix}panties
+├⪧° ඬ⃟🔞 ${usedPrefix}pene
+├⪧° ඬ⃟🔞 ${usedPrefix}porno
+├⪧° ඬ⃟🔞 ${usedPrefix}porno2
+├⪧° ඬ⃟🔞 ${usedPrefix}randomxxx
+├⪧° ඬ⃟🔞 ${usedPrefix}pechos
+├⪧° ඬ⃟🔞 ${usedPrefix}yaoi
+├⪧° ඬ⃟🔞 ${usedPrefix}yaoi2
+├⪧° ඬ⃟🔞 ${usedPrefix}yuri
+├⪧° ඬ⃟🔞 ${usedPrefix}yuri2
+├⪧° ඬ⃟🔞 ${usedPrefix}trapito
+├⪧° ඬ⃟🔞 ${usedPrefix}hentai
+├⪧° ඬ⃟🔞 ${usedPrefix}nsfwloli
+├⪧° ඬ⃟🔞 ${usedPrefix}nsfworgy
+├⪧° ඬ⃟🔞 ${usedPrefix}nsfwfoot
+├⪧° ඬ⃟🔞 ${usedPrefix}nsfwass
+├⪧° ඬ⃟🔞 ${usedPrefix}nsfwbdsm
+├⪧° ඬ⃟🔞 ${usedPrefix}nsfwcum
+├⪧° ඬ⃟🔞 ${usedPrefix}nsfwero
+├⪧° ඬ⃟🔞 ${usedPrefix}nsfwfemdom
+├⪧° ඬ⃟🔞 ${usedPrefix}nsfwglass
+╰─────────────────────
+╭───「﹡<ᴇғᴇᴄᴛᴏs ᴅᴇ ᴀᴜᴅɪᴏs/>﹡」
+﹡﹣ ʀᴇsᴘᴏɴᴅᴇ ᴀ ᴜɴ ᴀᴜᴅɪᴏ ᴏ ɴᴏᴛᴀ ᴅᴇ ᴠᴏᴢ*
+│
+├⪧° ඬ⃟🎤 ${usedPrefix}bass
+├⪧° ඬ⃟🎤 ${usedPrefix}blown
+├⪧° ඬ⃟🎤 ${usedPrefix}deep
+├⪧° ඬ⃟🎤 ${usedPrefix}earrape
+├⪧° ඬ⃟🎤 ${usedPrefix}fast
+├⪧° ඬ⃟🎤 ${usedPrefix}fat
+├⪧° ඬ⃟🎤 ${usedPrefix}nightcore
+├⪧° ඬ⃟🎤 ${usedPrefix}reverse
+├⪧° ඬ⃟🎤 ${usedPrefix}robot
+├⪧° ඬ⃟🎤 ${usedPrefix}slow
+├⪧° ඬ⃟🎤 ${usedPrefix}smooth
+├⪧° ඬ⃟🎤 ${usedPrefix}tupai
+╰───────────────
+╭───「﹡<ᴄʜᴀᴛ ᴀɴᴏɴɪᴍᴏ/>﹡」
+│
+├⪧° ඬ⃟📳 ${usedPrefix}start
+├⪧° ඬ⃟📳 ${usedPrefix}next
+├⪧° ඬ⃟📳 ${usedPrefix}leave
+╰───────────────
+╭───「*<ʙᴜsᴄᴀᴅᴏʀᴇs/>﹡」
+│
+├⪧° ඬ⃟🔍 ${usedPrefix}stickersearch *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}xnxxsearch *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}animeinfo *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}google *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}letra *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}wikipedia *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}ytsearch *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}apkdone *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}apkgoogle *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}apkmody *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}apkshub *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}happymod *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}hostapk *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}revdl *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}toraccino *<texto>*
+├⪧° ඬ⃟🔍 ${usedPrefix}uapkpro *<texto>*
+╰────────────────────────
+╭───「﹡<ᴀᴜᴅɪᴏs/>﹡」
+﹡﹣ ᴇsᴄʀɪʙᴇ ʟᴀs sɪɢᴜɪᴇɴᴛᴇs ᴘᴀʟᴀʙʀᴀs ᴏ ғʀᴀsᴇs sɪɴ ɴɪɴɢᴜɴ ᴘʀᴇғɪᴊᴏ ﹙﹟﹐ /﹐ ﹡﹐ .﹚﹡ 
+_﹙𝑢𝑠𝑜 𝑠𝑖𝑛 𝑝𝑟𝑒𝑓𝑖𝑗𝑜﹚_
+│
+├⪧° ඬ⃟🔊 Quien es tu sempai botsito 7w7
+├⪧° ඬ⃟🔊 Te diagnostico con gay
+├⪧° ඬ⃟🔊 A nadie le importa
+├⪧° ඬ⃟🔊 Fiesta del admin
+├⪧° ඬ⃟🔊 Fiesta del administrador 
+├⪧° ඬ⃟🔊 Vivan los novios
+├⪧° ඬ⃟🔊 Feliz cumpleaños
+├⪧° ඬ⃟🔊 Noche de paz
+├⪧° ඬ⃟🔊 Buenos dias
+├⪧° ඬ⃟🔊 Buenos tardes
+├⪧° ඬ⃟🔊 Buenos noches
+├⪧° ඬ⃟🔊 Audio hentai
+├⪧° ඬ⃟🔊 Chica lgante
+├⪧° ඬ⃟🔊 Feliz navidad
+├⪧° ඬ⃟🔊 Vete a la vrg
+├⪧° ඬ⃟🔊 Pasa pack Bot
+├⪧° ඬ⃟🔊 Atencion grupo
+├⪧° ඬ⃟🔊 Marica quien
+├⪧° ඬ⃟🔊 Murio el grupo
+├⪧° ඬ⃟🔊 Oh me vengo
+├⪧° ඬ⃟🔊 tio que rico
+├⪧° ඬ⃟🔊 Viernes
+├⪧° ඬ⃟🔊 Baneado
+├⪧° ඬ⃟🔊 Sexo
+├⪧° ඬ⃟🔊 Hola
+├⪧° ඬ⃟🔊 Un pato
+├⪧° ඬ⃟🔊 Nyanpasu
+├⪧° ඬ⃟🔊 Te amo
+├⪧° ඬ⃟🔊 amete
+├⪧° ඬ⃟🔊 Bañate
+├⪧° ඬ⃟🔊 Es puto
+├⪧° ඬ⃟🔊 La biblia
+├⪧° ඬ⃟🔊 Onichan
+├⪧° ඬ⃟🔊 Mierda de Bot
+├⪧° ඬ⃟🔊 Siuuu
+├⪧° ඬ⃟🔊 Rawr
+├⪧° ඬ⃟🔊 UwU
+├⪧° ඬ⃟🔊 :c
+├⪧° ඬ⃟🔊 a
+╰───────────────
+╭───「﹡<ʜᴇʀʀᴀᴍɪᴇɴᴛᴀs/>﹡」
+│
+├⪧° ඬ⃟🛠️ ${usedPrefix}afk *<motivo>*
+├⪧° ඬ⃟🛠️ ${usedPrefix}ocr *<responde a imagen>*
+├⪧° ඬ⃟🛠️ ${usedPrefix}acortar *<enlace / link / url>*
+├⪧° ඬ⃟🛠️ ${usedPrefix}calc *<operacion math>*
+├⪧° ඬ⃟🛠️ ${usedPrefix}del *<respondre a mensaje del Bot>*
+├⪧° ඬ⃟🛠️ ${usedPrefix}whatmusic *<responde a un audio>*
+├⪧° ඬ⃟🛠️ ${usedPrefix}qrcode *<texto>*
+├⪧° ඬ⃟🛠️ ${usedPrefix}readmore *<texto1| texto2>*
+├⪧° ඬ⃟🛠️ ${usedPrefix}spamwa *<numero|texto|cantidad>*
+├⪧° ඬ⃟🛠️ ${usedPrefix}styletext *<texto>*
+├⪧° ඬ⃟🛠️ ${usedPrefix}traducir *<texto>*
+╰─────────────────────────────
+╭───「﹡ <ʀᴘɢ﹣ ʟɪᴍɪᴛᴇ ﹣ ᴇᴄᴏɴᴏᴍɪᴀ/>﹡」
+│
+├⪧° ඬ⃟💵 ${usedPrefix}balance
+├⪧° ඬ⃟💵 ${usedPrefix}claim
+├⪧° ඬ⃟💵 ${usedPrefix}lb
+├⪧° ඬ⃟💵 ${usedPrefix}levelup
+├⪧° ඬ⃟💵 ${usedPrefix}myns
+├⪧° ඬ⃟💵 ${usedPrefix}perfil
+├⪧° ඬ⃟💵 ${usedPrefix}work
+├⪧° ඬ⃟💵 ${usedPrefix}minar
+├⪧° ඬ⃟💵 ${usedPrefix}buy
+├⪧° ඬ⃟💵 ${usedPrefix}buyall
+├⪧° ඬ⃟💵 ${usedPrefix}transfer *<tipo> <cantidad> <@tag>*
+├⪧° ඬ⃟💵 ${usedPrefix}verificar
+├⪧° ඬ⃟💵 ${usedPrefix}unreg *<numero de serie>*
+╰─────────────────────────────
+╭───「﹡<sᴛɪᴄᴋᴇʀs/>﹡」
+│
+├⪧° ඬ⃟👽 ${usedPrefix}sticker *<responder a imagen o video>*
+├⪧° ඬ⃟👽 ${usedPrefix}sticker *<enlace / link / url>*
+├⪧° ඬ⃟👽 ${usedPrefix}s *<responder a imagen o video>*
+├⪧° ඬ⃟👽 ${usedPrefix}s *<enlace / link / url>*
+├⪧° ඬ⃟👽 ${usedPrefix}emojimix *<emoji 1>&<emoji 2>*
+├⪧° ඬ⃟👽 ${usedPrefix}scircle *<responder a imagen>*
+├⪧° ඬ⃟👽 ${usedPrefix}sremovebg *<responder a imagen>*
+├⪧° ඬ⃟👽 ${usedPrefix}semoji *<tipo> <emoji>*
+├⪧° ඬ⃟👽 ${usedPrefix}attp *<texto>*
+├⪧° ඬ⃟👽 ${usedPrefix}attp2 *<texto>*
+├⪧° ඬ⃟👽 ${usedPrefix}attp3 *<texto>*
+├⪧° ඬ⃟👽 ${usedPrefix}ttp *<texto>*
+├⪧° ඬ⃟👽 ${usedPrefix}ttp2 *<texto>*
+├⪧° ඬ⃟👽 ${usedPrefix}ttp3 *<texto>*
+├⪧° ඬ⃟👽 ${usedPrefix}ttp4 *<texto>*
+├⪧° ඬ⃟👽 ${usedPrefix}ttp5 *<texto>*
+├⪧° ඬ⃟👽 ${usedPrefix}pat *<@tag>*
+├⪧° ඬ⃟👽 ${usedPrefix}slap *<@tag>*
+├⪧° ඬ⃟👽 ${usedPrefix}kiss *<@tag>*
+├⪧° ඬ⃟👽 ${usedPrefix}dado
+├⪧° ඬ⃟👽 ${usedPrefix}wm *<packname> <author>*
+├⪧° ඬ⃟👽 ${usedPrefix}stickermarker *<efecto> <responder a imagen>*
+├⪧° ඬ⃟👽 ${usedPrefix}stickerfilter *<efecto> <responder a imagen>*
+╰─────────────────────────────────────
+╭───「﹡<ᴏɴᴡɴᴇʀ ʏ ᴍᴏᴅᴇʀᴀᴅᴏʀᴇs />﹡」
+│
+├⪧° ඬ⃟👑 ${usedPrefix}cajafuerte
+├⪧° ඬ⃟👑 ${usedPrefix}enable *restrict*
+├⪧° ඬ⃟👑 ${usedPrefix}disable *restrict*
+├⪧° ඬ⃟👑 ${usedPrefix}enable *autoread*
+├⪧° ඬ⃟👑 ${usedPrefix}disable *autoread*
+├⪧° ඬ⃟👑 ${usedPrefix}enable *public*
+├⪧° ඬ⃟👑 ${usedPrefix}disable *public*
+├⪧° ඬ⃟👑 ${usedPrefix}enable *pconly*_
+├⪧° ඬ⃟👑 ${usedPrefix}disable *pconly*
+├⪧° ඬ⃟👑 ${usedPrefix}enable *gconly*
+├⪧° ඬ⃟👑 ${usedPrefix}disable *gconly*
+├⪧° ඬ⃟👑 ${usedPrefix}msg *<texto>*
+├⪧° ඬ⃟👑 ${usedPrefix}banchat_
+├⪧° ඬ⃟👑 ${usedPrefix}unbanchat
+├⪧° ඬ⃟👑 ${usedPrefix}banuser *<@tag>*
+├⪧° ඬ⃟👑 ${usedPrefix}unbanuser *<@tag>*
+├⪧° ඬ⃟👑 ${usedPrefix}banuser *<@tag>*
+├⪧° ඬ⃟👑 ${usedPrefix}bc *<texto>*
+├⪧° ඬ⃟👑 ${usedPrefix}bcchats *<texto>*
+├⪧° ඬ⃟👑 ${usedPrefix}bcgc *<texto>*
+├⪧° ඬ⃟👑 ${usedPrefix}cleartpm
+├⪧° ඬ⃟👑 ${usedPrefix}restart
+├⪧° ඬ⃟👑 ${usedPrefix}update
+├⪧° ඬ⃟👑 ${usedPrefix}addprem *<@tag>*
+├⪧° ඬ⃟👑 ${usedPrefix}delprem *<@tag>*
+├⪧° ඬ⃟👑 ${usedPrefix}listprem
+╰──────────────────────────
+`.trim()
+conn.sendHydrated2(m.chat, str, wm, pp, 'https://www.paypal.me/ElRaptor', '𝙿𝙰𝚈𝙿𝙰𝙻', 'https://github.com/notxfantasma666/Fantasma-Bot-MD', '𝙶𝙸𝚃𝙷𝚄𝙱', [
+['📮 𝙳𝙾𝙽𝙰𝚁 📮', '/donasi'],
+['🌹 𝙾𝚆𝙽𝙴𝚁 🌹', '/owner'],
+['🐾 𝙸𝙽𝙵𝙾𝙱𝙾𝚃 🐾', '/infobot']
+], m,)
+//await conn.sendFile(m.chat, vn, 'menu.mp3', null, m, true, {
+//type: 'audioMessage', 
+//ptt: true})
+} catch (e) {
+conn.reply(m.chat, '*[❗𝐈𝐍𝐅𝐎❗] 𝙴𝙻 𝙼𝙴𝙽𝚄 𝚃𝙸𝙴𝙽𝙴 𝚄𝙽 𝙴𝚁𝚁𝙾𝚁 𝚈 𝙽𝙾 𝙵𝚄𝙴 𝙿𝙾𝚂𝙸𝙱𝙻𝙴 𝙴𝙽𝚅𝙸𝙰𝚁𝙻𝙾, 𝚁𝙴𝙿𝙾𝚁𝚃𝙴𝙻𝙾 𝙰𝙻 𝙿𝚁𝙾𝙿𝙸𝙴𝚃𝙰𝚁𝙸𝙾 𝙳𝙴𝙻 𝙱𝙾𝚃*', m)
+throw e
+}}
+handler.command = /^(menu|menú)$/i
 export default handler
-
-//----------- FUNCTION -------
-
-function pickRandom(list) {
-  return list[Math.floor(Math.random() * list.length)]
-}
 
 const more = String.fromCharCode(8206)
 const readMore = more.repeat(4001)
-
 function clockString(ms) {
-  let h = isNaN(ms) ? '--' : Math.floor(ms / 3600000)
-  let m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60
-  let s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60
-  return [h, ' H ', m, ' M ', s, ' S '].map(v => v.toString().padStart(2, 0)).join('')
-}
-function clockStringP(ms) {
-  let ye = isNaN(ms) ? '--' : Math.floor(ms / 31104000000) % 10
-  let mo = isNaN(ms) ? '--' : Math.floor(ms / 2592000000) % 12
-  let d = isNaN(ms) ? '--' : Math.floor(ms / 86400000) % 30
-  let h = isNaN(ms) ? '--' : Math.floor(ms / 3600000) % 24
-  let m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60
-  let s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60
-  return [ye, ' *Years 🗓️*\n',  mo, ' *Month 🌙*\n', d, ' *Days ☀️*\n', h, ' *Hours 🕐*\n', m, ' *Minute ⏰*\n', s, ' *Second ⏱️*'].map(v => v.toString().padStart(2, 0)).join('')
-}
-function ucapan() {
-  const time = moment.tz('Asia/Jakarta').format('HH')
-  let res = "Selamat DiniHari ☀️"
-  if (time >= 4) {
-    res = "Good Morning 🌄"
-  }
-  if (time >= 10) {
-    res = "Good Afternoon ☀️"
-  }
-  if (time >= 15) {
-    res = "Good Afternoon 🌇"
-  }
-  if (time >= 18) {
-    res = "Good Night 🌙"
-  }
-  return res
-}
+let h = isNaN(ms) ? '--' : Math.floor(ms / 3600000)
+let m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60
+let s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60
+return [h, m, s].map(v => v.toString().padStart(2, 0)).join(':')}
